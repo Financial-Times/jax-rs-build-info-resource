@@ -9,22 +9,12 @@
 
 	<groupId>com.ft</groupId>
     <artifactId>jaxrs-build-info-resource</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 
     <packaging>jar</packaging>
     <name>A JAX-RS resource for outputting the app's build information.</name>
     
     <repositories>
-        <repository>
-            <id>ft-pipeline-sandbox</id>
-            <url>http://anthill.svc.ft.com:8081/nexus/content/repositories/pipeline-sandbox/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
         <repository>
             <id>ft-releases</id>
             <url>http://anthill.svc.ft.com:8081/nexus/content/groups/public</url>
@@ -40,9 +30,9 @@
     
     <dependencies>
         <dependency>
-            <groupId>com.yammer.dropwizard</groupId>
-            <artifactId>dropwizard-core</artifactId>
-            <version>0.6.2</version>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>1.17.1</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

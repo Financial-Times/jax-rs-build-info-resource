@@ -8,21 +8,30 @@ public class PropertiesFileLoader {
 	
 	/**
 	 * Loads a property file from the classpath
-	 * @param propertiesFile The path of the properties resource e.g. /example.properties
-	 * @return A Properties instance or null if not found on the classpath
+	 * @param propertiesFilePath The path of the properties resource e.g. /example.properties
+	 * @return A Properties instance if found on the classpath
+	 * @throws PropertiesFileLoaderException Thrown when there is a problem loading the properties file.
 	 */
-	public static Properties load(String propertiesFile) {
+	public static Properties load(String propertiesFilePath) throws PropertiesFileLoaderException {
+		InputStream in = PropertiesFileLoader.class.getResourceAsStream(propertiesFilePath);
+    	if (in == null) {
+    		throw new PropertiesFileLoaderException(propertiesFilePath);
+    	}
+
 		try {
-			InputStream in = PropertiesFileLoader.class.getResourceAsStream(propertiesFile);
-	    	if (in == null) {
-	    		return null;
-	    	}
-    		Properties prop = new Properties();
-    		prop.load(in);
-    		in.close();
-    		return prop;
+			return loadProperties(in);
 		} catch (IOException ex) {
-			return null;
+    		throw new PropertiesFileLoaderException(propertiesFilePath, ex);
+		}
+	}
+
+	private static Properties loadProperties(InputStream in) throws IOException {
+		try {
+			Properties prop = new Properties();
+			prop.load(in);
+			return prop;
+		} finally {
+			in.close();
 		}
 	}
 	

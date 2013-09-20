@@ -11,42 +11,36 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/build-info")
-@Produces(MediaType.APPLICATION_JSON)
-public class BuildInfoResource {
+@Path("/build-info/version")
+@Produces(MediaType.TEXT_PLAIN)
+public class VersionResource {
 
 	private static final String DEFAULT_BUILD_INFO_PROPERTIES = "/build-info.properties";
 
 	private final String propertiesFileName;
 	
-	public BuildInfoResource() {
+	public VersionResource() {
 		propertiesFileName = DEFAULT_BUILD_INFO_PROPERTIES;
 	}
 	
-	public BuildInfoResource(String propertiesFileName) {
+	public VersionResource(String propertiesFileName) {
 		this.propertiesFileName = propertiesFileName;
 	}
 
 	@GET
-	public BuildInfo getBuildInfo() {
+	public String getVersion() {
 
 		try {
 			Properties buildInfoProperties = PropertiesFileLoader.load(propertiesFileName);
-			return new BuildInfo(buildInfoProperties);
+			return buildInfoProperties.getProperty("artifact.version");
 		} catch(PropertiesFileLoaderException ex) {
 			Response error = Response.serverError()
-									 .entity(singleValueMap("message", ex.getMessage()))
-									 .type(MediaType.APPLICATION_JSON)
+									 .entity(ex.getMessage())
+									 .type(MediaType.TEXT_PLAIN)
 									 .build();
 			
 			throw new WebApplicationException(error);
 		}
-	}
-
-	private Map<String, String> singleValueMap(String key, String value) {
-		HashMap<String, String> map = new HashMap<String, String>();
-		map.put(key, value);
-		return map;
 	}
 
 }

@@ -11,20 +11,29 @@ version=$3
 echo "Checking ${check_url} for artifact_id ${artifact_id} with version ${version}"
 
 
-
 rm -f /tmp/healthcheck.log
 rm -f /tmp/healthcheck_status.log
 
-http_status=$(curl -v -o /tmp/healthcheck.log -k --connect-timeout 1 -m 120 -w "\n%{http_code}\n" $check_url  2>/tmp/healthcheck_status.log | tail -1 )
-if [[ $http_status == "000" ]]; then
-    echo "ERROR: Couldn't connect to $check_url"
-    cat /tmp/healthcheck.log
-    exit 2
-elif [[ $http_status != "200" ]]; then
-    echo "Health check failed"
-    cat /tmp/healthcheck.log
-    exit 2
-else
+
+http_status=$(curl -v -o /tmp/healthcheck.log -k --connect-timeout 10 -w "\n%{http_code}\n" $check_url  2>/tmp/healthcheck_status.log | tail -1 )
+while [[ $http_status != "200" ]]; do
+    sleep 2
+    let count++
+    if [[ $count == 60 ]]; then
+        if [[ $http_status == "000" ]]; then
+            echo "ERROR: Couldn't connect to $check_url"
+            cat /tmp/healthcheck.log
+            exit 2
+        elif [[ $http_status != "200" ]]; then
+            echo "Startup failed. Could not get a 200 from $check_url after 2 minutes"
+            cat /tmp/healthcheck.log
+            exit 2
+        fi
+    fi
+    http_status=$(curl -v -o /tmp/healthcheck.log -k --connect-timeout 10 -w "\n%{http_code}\n" $check_url  2>/tmp/healthcheck_status.log | tail -1 )
+done
+
+if [[ $http_status == "200" ]]; then
     echo "Health check OK"
 fi
 

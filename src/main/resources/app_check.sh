@@ -1,12 +1,13 @@
 #!/bin/bash
-if [ $# -ne 3 ]; then
-    echo "Correct usage is : healthcheck <http://url_to_check> deployed_artifact_id deployed_artifact_version"
+if [[ $# -lt 3 || $# -gt 4 ]]; then
+    echo "Correct usage is : healthcheck http://url_to_check deployed_artifact_id deployed_artifact_version <optional timeout in seconds - default is 120>"
     exit 2
 fi
 
 check_url=$1
 artifact_id=$2
 version=$3
+timeout=${4:-120}
 count=0
 status_url_successfull="Status check URL OK"
 artifact_id_successfull="Artifact ID OK"
@@ -51,9 +52,9 @@ is_deployed
 while [[ $status_code != 0 ]]; do
     let count++
     
-    sleep 2
+    sleep 1
     
-    if [[ $count == 60 ]]; then
+    if [[ $count == $timeout ]]; then
             echo "$err_message"
             exit 2
     fi

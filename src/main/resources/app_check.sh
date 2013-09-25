@@ -7,49 +7,59 @@ fi
 check_url=$1
 artifact_id=$2
 version=$3
+count=0
+status_url_successfull="Status check URL OK"
+artifact_id_successfull="Artifact ID OK"
+artifact_version_successfull="Artifact Version OK"
 
 echo "Checking ${check_url} for artifact_id ${artifact_id} with version ${version}"
 
-
 rm -f /tmp/healthcheck.log
 rm -f /tmp/healthcheck_status.log
+status_code=0
+err_message=""
 
-
-http_status=$(curl -v -o /tmp/healthcheck.log -k --connect-timeout 10 -w "\n%{http_code}\n" $check_url  2>/tmp/healthcheck_status.log | tail -1 )
-while [[ $http_status != "200" ]]; do
-    sleep 2
-    let count++
-    if [[ $count == 60 ]]; then
-        if [[ $http_status == "000" ]]; then
-            echo "ERROR: Couldn't connect to $check_url"
-            cat /tmp/healthcheck.log
-            exit 2
-        elif [[ $http_status != "200" ]]; then
-            echo "Startup failed. Could not get a 200 from $check_url after 2 minutes"
-            cat /tmp/healthcheck.log
-            exit 2
-        fi
-    fi
+function is_deployed(){
+    
+    status_code=0
     http_status=$(curl -v -o /tmp/healthcheck.log -k --connect-timeout 10 -w "\n%{http_code}\n" $check_url  2>/tmp/healthcheck_status.log | tail -1 )
+    
+            
+    if [[ $http_status == "000" ]]; then
+            err_message="Couldn't connect to $check_url"
+            status_code=2
+    elif [[ $http_status == "200" ]]; then
+        artifact_check=$(sed -e 's/[{}]/''/g' /tmp/healthcheck.log | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep -i "artifact.id" )
+        if [[ "$artifact_check" != *${artifact_id}* ]]; then
+            err_message="Artifact deployed to the environment is incorrect. Got ${artifact_check}"
+            status_code=2        
+        else    
+            version_check=$(sed -e 's/[{}]/''/g' /tmp/healthcheck.log | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep -i "artifact.version")
+            if [[ "$version_check" != *${version}* ]]; then
+                err_message="Artifact version deployed to the environment is incorrect. Got ${version_check}"
+                status_code=2
+            fi
+        fi
+    else
+        err_message="Got a reponse code of $http_status at $check_url"
+        status_code=2
+    fi
+}
+
+
+is_deployed
+while [[ $status_code != 0 ]]; do
+    let count++
+    
+    sleep 2
+    
+    if [[ $count == 60 ]]; then
+            echo "$err_message"
+            exit 2
+    fi
+    
+    is_deployed
 done
 
-if [[ $http_status == "200" ]]; then
-    echo "Health check OK"
-fi
-
-
-artifact_check=$(sed -e 's/[{}]/''/g' /tmp/healthcheck.log | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep -i "artifact.id" )
-if [[ "$artifact_check" = *${artifact_id}* ]]; then
-    echo "Artifact ID OK"
-else
-    echo "Artifact deployed to the environment is incorrect. Got ${artifact_check}"
-    exit 2
-fi
-
-version_check=$(sed -e 's/[{}]/''/g' /tmp/healthcheck.log | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep -i "artifact.version")
-if [[ "$version_check" == *${version}* ]]; then
-    echo "Artifact Version OK"
-else
-    echo "Artifact version deployed to the environment is incorrect. Got ${version_check}"
-    exit 2
-fi
+printf "${status_url_successfull}\n${artifact_id_successfull}\n${artifact_version_successfull}\n" 
+exit 0

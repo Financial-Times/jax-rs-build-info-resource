@@ -12,7 +12,8 @@
     <version>1.1</version>
 
     <packaging>jar</packaging>
-    <name>A JAX-RS resource for outputting the app's build information.</name>
+    <name>JAX-RS Build Info</name>
+    <description>A JAX-RS resource for outputting the app's build information.</description>
     
     <repositories>
         <repository>
@@ -67,26 +68,6 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <rule>
-                                    <element>BUNDLE</element>
-                                    <limits>
-                                        <limit>
-                                            <counter>COMPLEXITY</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>0.60</minimum>
-                                        </limit>
-                                    </limits>
-                                </rule>
-                            </rules>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

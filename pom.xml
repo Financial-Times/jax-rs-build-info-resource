@@ -23,19 +23,20 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+        <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.6</jacoco-maven-plugin.version>
     </properties>
 
     <distributionManagement>
         <repository>
-            <id>releases</id>
+            <id>cloudsmith</id>
             <name>Internal Releases</name>
-            <url>https://nexus.in.ft.com/repository/releases</url>
+            <url>https://maven.packages.ft.com/financial-times-internal-releases/</url>
         </repository>
         <snapshotRepository>
-            <id>snapshots</id>
+            <id>cloudsmith</id>
             <uniqueVersion>true</uniqueVersion>
-            <url>https://nexus.in.ft.com/repository/snapshots/</url>
+            <url>https://maven.packages.ft.com/financial-times-internal-unstable/</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -148,6 +149,18 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>${coveralls-maven-plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                        <version>2.3.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
